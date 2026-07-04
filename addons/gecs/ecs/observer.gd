@@ -86,10 +86,15 @@ var q: QueryBuilder:
 		return _world.query if _world else (ECS.world.query if ECS.world else null)
 
 ## Reference to the [World] this observer belongs to (set by [method World.add_observer]).
-var _world: World = null
+# Vendor patch: untyped to break World→Observer→World circular
+# class-graph dependency that blocks world.gd from parsing in
+# headless runtime mode. World methods are resolved dynamically.
+var _world = null
 
 ## Command buffer for queuing structural changes from event callbacks. Lazy — created on first access.
-var cmd: CommandBuffer = null:
+# Vendor patch: untyped to break Observer→CommandBuffer→World circular
+# class-graph dependency. CommandBuffer methods are resolved dynamically.
+var cmd = null:
 	get:
 		if cmd == null:
 			cmd = CommandBuffer.new(_world if _world else ECS.world)

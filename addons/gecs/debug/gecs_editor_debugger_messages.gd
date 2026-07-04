@@ -131,7 +131,9 @@ static func _send(message: String, data: Array) -> void:
 	EngineDebugger.send_message(message, data)
 
 
-static func world_init(world: World) -> bool:
+# Vendor patch: world:World -> world:Node to break
+# gecs_editor_debugger_messages->World circular parse dep
+static func world_init(world: Node) -> bool:
 	if can_send_message():
 		_send(Msg.WORLD_INIT, [world.get_instance_id(), world.get_path()])
 	return true
@@ -153,7 +155,9 @@ static func system_last_run_data(system: System, last_run_data: Dictionary) -> b
 	return true
 
 
-static func set_world(world: World) -> bool:
+# Vendor patch: world:World -> world:Node to break
+# gecs_editor_debugger_messages->World circular parse dep
+static func set_world(world: Node) -> bool:
 	if can_send_message():
 		_send(
 			Msg.SET_WORLD,

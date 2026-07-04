@@ -120,14 +120,19 @@ var lastRunData := {}
 var _debug_name := ""
 
 ## Reference to the world this system belongs to (set by World.add_system)
-var _world: World = null
+# Vendor patch: untyped to break World→System→World circular
+# class-graph dependency that blocks world.gd from parsing in
+# headless runtime mode. World methods are resolved dynamically.
+var _world = null
 ## Convenience property for accessing query builder (returns _world.query or ECS.world.query)
 var q: QueryBuilder:
 	get:
 		return _world.query if _world else (ECS.world.query if ECS.world else null)
 ## Command buffer for queuing structural changes (add/remove components, entities, relationships)
 ## Commands are executed after the system completes based on command_buffer_flush_mode
-var cmd: CommandBuffer = null:
+# Vendor patch: untyped to break System→CommandBuffer→World circular
+# class-graph dependency. CommandBuffer methods are resolved dynamically.
+var cmd = null:
 	get:
 		if cmd == null:
 			cmd = CommandBuffer.new(_world if _world else ECS.world)
@@ -436,7 +441,7 @@ func _handle(delta: float) -> void:
 		return
 	# Always measure time when the Performance monitor is on, even without ECS.debug,
 	# so the monitor callable has a live value to return.
-	var measure_time := ECS.debug or performance_monitor
+	var measure_time: bool = ECS.debug or performance_monitor
 	var start_time_usec := 0
 	if measure_time:
 		start_time_usec = Time.get_ticks_usec()
