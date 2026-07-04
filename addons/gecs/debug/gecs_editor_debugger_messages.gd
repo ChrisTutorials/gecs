@@ -29,7 +29,9 @@ static func can_send_message() -> bool:
 	return not Engine.is_editor_hint() and OS.has_feature("editor")
 
 
-static func world_init(world: World) -> bool:
+# Vendor patch: world:World -> world:Node to break
+# gecs_editor_debugger_messages->World circular parse dep
+static func world_init(world: Node) -> bool:
 	if can_send_message():
 		(
 			EngineDebugger
@@ -77,7 +79,9 @@ static func system_last_run_data(system: System, last_run_data: Dictionary) -> b
 	return true
 
 
-static func set_world(world: World) -> bool:
+# Vendor patch: world:World -> world:Node to break
+# gecs_editor_debugger_messages->World circular parse dep
+static func set_world(world: Node) -> bool:
 	if can_send_message():
 		(
 			EngineDebugger

@@ -26,8 +26,10 @@ extends RefCounted
 ## Queued commands to execute (each callable performs one operation)
 var _commands: Array[Callable] = []
 
-## Reference to the world for executing commands
-var _world: World = null
+# Vendor patch: untyped to break CommandBuffer→World circular
+# class-graph dependency that blocks world.gd from parsing in
+# Godot 4.7 headless runtime. Resolved dynamically at runtime.
+var _world = null
 
 ## Statistics for debugging (optional)
 var _stats := {
@@ -37,7 +39,7 @@ var _stats := {
 }
 
 
-func _init(world: World = null):
+func _init(world = null):
 	_world = world if world else ECS.world
 
 
