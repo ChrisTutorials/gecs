@@ -81,9 +81,10 @@ var paused: bool = false
 ## world, so sub_observers can call [code]q.with_all(...)[/code] independently per tuple
 ## without them sharing mutable state. If the observer is not yet attached to a world,
 ## returns the global [code]ECS.world.query[/code] builder or null.
+# Vendor patch: ECS guard to break Observer→ECS→ecs.gd parse circle in headless mode
 var q: QueryBuilder:
 	get:
-		return _world.query if _world else (ECS.world.query if ECS.world else null)
+		return _world.query if _world else (ECS.world.query if ECS and ECS.world else null)
 
 ## Reference to the [World] this observer belongs to (set by [method World.add_observer]).
 # Vendor patch: untyped to break World→Observer→World circular

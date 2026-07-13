@@ -27,13 +27,15 @@ class_name _ECS
 extends Node
 
 ## Emitted when the world is changed with a ref to the new world
-signal world_changed(world: World)
+## Vendor patch: world:World -> world (untyped) to break ECS<->World circular parse dep (#187)
+signal world_changed(world)
 ##  Emitted when the world is exited
 signal world_exited
 
 ## The Current active [World] Instance[br]
 ## Holds a reference to the currently active [World], allowing access to the [member World.query] instance and any [Entity]s and [System]s within it.
-var world: World:
+## Vendor patch: :World -> untyped to break ECS<->World circular parse dep (#187)
+var world:
 	get:
 		return world
 	set(value):
@@ -53,7 +55,8 @@ var world: World:
 			# This ensures system setup() methods can safely access ECS.world
 			world.finalize_system_setup()
 		world_changed.emit(world)
-		assert(GECSEditorDebuggerMessages.set_world(world) if debug else true, "Debug Data")
+		# Vendor patch: removed GECSEditorDebuggerMessages parse dep from autoload; debug
+		# path re-added via world.gd initialize() which already calls world_init directly.
 
 ## Are we in debug mode? Controlled by project setting gecs/debug_mode.
 ## Can be overridden per-instance with CLI args: --gecs-debug / --no-gecs-debug
@@ -66,7 +69,8 @@ static func _resolve_debug_mode() -> bool:
 		return false
 	if "--gecs-debug" in args:
 		return true
-	return ProjectSettings.get_setting(GecsSettings.SETTINGS_DEBUG_MODE, false)
+	# Vendor patch: raw string literal to break _ECS autoload parse dep on GecsSettings
+	return ProjectSettings.get_setting("gecs/debug_mode", false)
 
 
 ## This is an array of functions that get called on the entities when they get added to the world (after they are ready)
@@ -113,16 +117,24 @@ func get_components(entities, component_type, default_component = null) -> Array
 func _on_world_exited() -> void:
 	world = null
 	world_exited.emit()
-	assert(GECSEditorDebuggerMessages.exit_world() if debug else true, "Debug Data")
+	# Vendor patch: removed GECSEditorDebuggerMessages parse dep from autoload
 
 
-func serialize(query: QueryBuilder, config: GECSSerializeConfig = null) -> GecsData:
-	return GECSIO.serialize(query, config)
+## Vendor patch: lazy-load GECSIO to break _ECS autoload parse dep on GECSIO/GecsData
+var _gecs_io = null
+
+func _lazy_gecs_io():
+	if _gecs_io == null:
+		_gecs_io = load("res://addons/gecs/io/io.gd")
+	return _gecs_io
+
+func serialize(query, config = null):
+	return _lazy_gecs_io().serialize(query, config)
 
 
-func save(gecs_data: GecsData, filepath: String, binary: bool = false) -> bool:
-	return GECSIO.save(gecs_data, filepath, binary)
+func save(gecs_data, filepath: String, binary: bool = false) -> bool:
+	return _lazy_gecs_io().save(gecs_data, filepath, binary)
 
 
-func deserialize(gecs_filepath: String) -> Array[Entity]:
-	return GECSIO.deserialize(gecs_filepath)
+func deserialize(gecs_filepath: String):
+	return _lazy_gecs_io().deserialize(gecs_filepath)
