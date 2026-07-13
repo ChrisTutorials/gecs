@@ -41,9 +41,7 @@ enum {
 ## Flat op-record storage: [op_code, entity, a, b] repeated. See enum for slot meanings.
 var _ops: Array = []
 
-# Vendor patch: untyped to break CommandBuffer→World circular
-# class-graph dependency that blocks world.gd from parsing in
-# Godot 4.7 headless runtime. Resolved dynamically at runtime.
+## Reference to the world for executing commands
 var _world = null
 
 ## Statistics for debugging (optional)
