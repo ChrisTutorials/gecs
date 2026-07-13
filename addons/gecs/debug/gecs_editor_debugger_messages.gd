@@ -139,13 +139,15 @@ static func world_init(world: Node) -> bool:
 	return true
 
 
-static func system_metric(system: System, time: float) -> bool:
+# Vendor patch: system:System -> untyped to break GECSEditorDebuggerMessages→System→ECS parse circle
+static func system_metric(system, time: float) -> bool:
 	if can_send_message():
 		_send(Msg.SYSTEM_METRIC, [system.get_instance_id(), system.name, time])
 	return true
 
 
-static func system_last_run_data(system: System, last_run_data: Dictionary) -> bool:
+# Vendor patch: system:System -> untyped to break GECSEditorDebuggerMessages→System→ECS parse circle
+static func system_last_run_data(system, last_run_data: Dictionary) -> bool:
 	if can_send_message():
 		# duplicate so the caller's dictionary isn't mutated before the peer encodes it
 		_send(
@@ -203,7 +205,8 @@ static func entity_enabled(ent: Entity) -> bool:
 	return true
 
 
-static func system_added(sys: System) -> bool:
+# Vendor patch: system:System -> untyped to break GECSEditorDebuggerMessages→System→ECS parse circle
+static func system_added(sys) -> bool:
 	if can_send_message():
 		_send(
 			Msg.SYSTEM_ADDED,
@@ -219,7 +222,8 @@ static func system_added(sys: System) -> bool:
 	return true
 
 
-static func system_removed(sys: System) -> bool:
+# Vendor patch: system:System -> untyped to break GECSEditorDebuggerMessages→System→ECS parse circle
+static func system_removed(sys) -> bool:
 	if can_send_message():
 		_send(Msg.SYSTEM_REMOVED, [sys.get_instance_id(), sys.get_path()])
 	return true

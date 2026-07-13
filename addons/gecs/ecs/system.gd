@@ -125,9 +125,10 @@ var _debug_name := ""
 # headless runtime mode. World methods are resolved dynamically.
 var _world = null
 ## Convenience property for accessing query builder (returns _world.query or ECS.world.query)
+# Vendor patch: ECS guard to break System→ECS→ecs.gd parse circle in headless mode
 var q: QueryBuilder:
 	get:
-		return _world.query if _world else (ECS.world.query if ECS.world else null)
+		return _world.query if _world else (ECS.world.query if ECS and ECS.world else null)
 ## Command buffer for queuing structural changes (add/remove components, entities, relationships)
 ## Commands are executed after the system completes based on command_buffer_flush_mode
 # Vendor patch: untyped to break System→CommandBuffer→World circular
