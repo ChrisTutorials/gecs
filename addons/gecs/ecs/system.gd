@@ -339,21 +339,10 @@ func _resolve_monitor_name() -> String:
 func _register_performance_monitor() -> void:
 	var id := &"%s - [GECS]" % _resolve_monitor_name()
 	_perf_monitor_id = id
-	# MONITOR_TYPE_TIME formats as "X.XX ms" in the Monitors panel, matching the
-	# built-in Process / Physics Process monitors. The callable must return the
-	# value in [b]seconds[/b]; Godot multiplies internally for the ms display.
-	# The MonitorType parameter requires Godot 4.6+, the minimum engine version
-	# GECS supports. On 4.5 and earlier this call is a parse error that cascades
-	# into "Could not resolve class System" framework-wide (see issue #115).
-	(
-		Performance
-		.add_custom_monitor(
-			id,
-			Callable(self, "_get_perf_monitor_time"),
-			[],
-			Performance.MONITOR_TYPE_TIME,
-		)
-	)
+	# Keep the three-argument surface shared by Godot and Redot. Some Godot
+	# versions offer a fourth formatter argument, but referencing it makes the
+	# script fail to parse on Redot before GECS can start.
+	Performance.add_custom_monitor(id, Callable(self, "_get_perf_monitor_time"), [])
 
 
 func _unregister_performance_monitor() -> void:
@@ -364,8 +353,7 @@ func _unregister_performance_monitor() -> void:
 
 ## Callback invoked by Godot's Performance singleton. Must return a primitive
 ## float and allocate nothing — hot path during Monitors panel sampling.
-## Returns the current-frame execution time in [b]seconds[/b]; Godot's
-## MONITOR_TYPE_TIME formatter converts it to "X.XX ms" for display.
+## Returns the current-frame execution time in [b]seconds[/b].
 func _get_perf_monitor_time() -> float:
 	return _last_execution_time_ms / 1000.0
 
